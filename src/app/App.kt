@@ -7,22 +7,21 @@ import kotlinext.js.js
 import react.dom.key
 import game.*
 import kotlinx.html.js.onClickFunction
+import react.dom.button
 
 interface MultiverseState : RState {
     var universe: Universe
     var frame: Frame
+    var outermost: Coordinate
 }
 
 class App : RComponent<RProps, MultiverseState>() {
 
     override fun MultiverseState.init() {
-
-        universe = Universe(setOf(
-                alive(x = 0, y = 0)
-        ))
-
+        outermost = Coordinate(x = 50, y = 30)
+        universe = Universe()
         universe
-                .createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = Coordinate(x = 10, y = 10))
+                .createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = outermost)
                 .ifSuccess { frame = it }
     }
 
@@ -43,19 +42,19 @@ class App : RComponent<RProps, MultiverseState>() {
 
     override fun RBuilder.render() {
 
-        (0L..9).forEach { invertedX ->
+        (0L..state.outermost.y).forEach { invertedY ->
 
-            val x = 9 - invertedX
+            val y = state.outermost.y - invertedY
 
             div {
-                attrs.key = "x-$x"
+                attrs.key = "y-$y"
                 attrs.style = centeredElementFlexStyle
                 div {
-                    +x.toString()
-                    attrs.key = "y-legend-$x"
+                    +y.toString()
+                    attrs.key = "y-legend-$y"
                     attrs.style = legendStyle
                 }
-                (0L..9).forEach { y ->
+                (0L..state.outermost.x).forEach { x ->
 
                     val coordinate = Coordinate(x = x, y = y)
 
@@ -77,7 +76,7 @@ class App : RComponent<RProps, MultiverseState>() {
                             val universe = Universe(lessCells.plus(cell.toggle()))
 
                             universe
-                                    .createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = Coordinate(x = 10, y = 10))
+                                    .createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = state.outermost)
                                     .ifSuccess {
                                         setState {
                                             this.universe = universe
@@ -101,7 +100,7 @@ class App : RComponent<RProps, MultiverseState>() {
                     margin = "2px"
                 }
             }
-            (0..9).forEach { y ->
+            (0..state.outermost.x).forEach { y ->
                 div {
                     +y.toString()
                     attrs.key = "x-legend-$y"
@@ -109,10 +108,63 @@ class App : RComponent<RProps, MultiverseState>() {
                 }
             }
         }
-    }
 
-    button {
+        div {
+            attrs.key = "button-bar"
+            attrs.style = centeredElementFlexStyle
 
+            button {
+                +"Next"
+                attrs.style = js {
+                    width = 60
+                    height = 20
+                    border = "1px solid black"
+                    margin = "1px"
+                }
+                attrs.onClickFunction = { event ->
+
+                    state.universe
+                            .next()
+                            .flatMapSuccess { universe ->
+                                universe
+                                        .createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = state.outermost)
+                                        .mapSuccess { universe to it }
+                            }
+                            .ifSuccess { (universe, frame) ->
+                                setState {
+                                    this.universe = universe
+                                    this.frame = frame
+                                }
+                            }
+                }
+            }
+
+            button {
+                +"Play"
+                attrs.style = js {
+                    width = 60
+                    height = 20
+                    border = "1px solid black"
+                    margin = "1px"
+                }
+                attrs.onClickFunction = { event ->
+
+                    state.universe
+                            .next()
+                            .flatMapSuccess {
+                                setState {
+                                    this.universe = it
+                                }
+                                it.createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = state.outermost)
+                            }
+                            .ifSuccess {
+                                setState {
+                                    this.frame = it
+                                }
+                            }
+                }
+            }
+        }
     }
 }
 

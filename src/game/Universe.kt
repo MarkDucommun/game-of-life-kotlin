@@ -1,6 +1,6 @@
 package game
 
-data class Universe(val cells: Set<Cell>) : Set<Cell> by cells
+data class Universe(val cells: Set<Cell> = emptySet()) : Set<Cell> by cells
 
 fun universe(vararg cell: Cell) = Universe(cells = cell.asList().toSet())
 
