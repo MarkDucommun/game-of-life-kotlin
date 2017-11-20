@@ -21,12 +21,9 @@ class App : RComponent<RProps, MultiverseState>() {
                 alive(x = 0, y = 0)
         ))
 
-        val frameResult = universe.createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = Coordinate(x = 10, y = 10))
-
-        when (frameResult) {
-            is Success -> frame = frameResult.value
-            is Failure -> TODO()
-        }
+        universe
+                .createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = Coordinate(x = 10, y = 10))
+                .ifSuccess { frame = it }
     }
 
     val centeredElementFlexStyle = js {
@@ -74,7 +71,19 @@ class App : RComponent<RProps, MultiverseState>() {
                             if (cell is Alive) backgroundColor = "red"
                         }
                         attrs.onClickFunction = { event ->
-                            state.universe.plus(cell)
+
+                            val lessCells: Set<Cell> = state.universe.cells.filterNot { it == cell }.toSet()
+
+                            val universe = Universe(lessCells.plus(cell.toggle()))
+
+                            universe
+                                    .createFrame(origin = Coordinate(x = 0, y = 0), upperOutermost = Coordinate(x = 10, y = 10))
+                                    .ifSuccess {
+                                        setState {
+                                            this.universe = universe
+                                            this.frame = it
+                                        }
+                                    }
                         }
                     }
                 }
@@ -100,6 +109,10 @@ class App : RComponent<RProps, MultiverseState>() {
                 }
             }
         }
+    }
+
+    button {
+
     }
 }
 

@@ -6,23 +6,9 @@ import test.utilities.grouping
 import test.utilities.succeedsAndShouldReturn
 import test.utilities.test
 
-interface AppState {
-
-}
-
 class TestRunner : RComponent<RProps, RState>() {
 
     override fun RBuilder.render() {
-
-        grouping(description = "cell") {
-            test(description = "toggle - kills an alive cell") {
-                alive(x = 0, y = 0)
-            }
-
-            test(description = "toggle - revives a dead cell") {
-
-            }
-        }
 
         grouping(description = "universe") {
 

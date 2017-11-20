@@ -8,6 +8,13 @@ sealed class Cell(val location: Coordinate) {
 
     override fun toString() = location.toString()
 
+    fun toggle(): Cell {
+        return when (this) {
+            is Alive -> this.kill()
+            is Dead -> this.revive()
+        }
+    }
+
     companion object {
 
         fun alive(x: Long, y: Long) = Alive(location = Coordinate(x = x, y = y))

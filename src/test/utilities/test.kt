@@ -23,3 +23,19 @@ fun RBuilder.test(description: String, fn: () -> Result<String, Unit>): Unit {
         }
     }
 }
+
+fun RBuilder.simpleTest(description: String, fn: () -> Boolean): Unit {
+
+    div {
+        +description
+        fn().apply {
+            when (this) {
+                true -> attrs.style = js { color = "green" }
+                false -> {
+                    +" - FAILS"
+                    attrs.style = js { color = "red" }
+                }
+            }
+        }
+    }
+}
