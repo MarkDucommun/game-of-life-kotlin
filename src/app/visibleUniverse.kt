@@ -3,18 +3,14 @@ package app
 import game.*
 import kotlinx.html.js.onClickFunction
 import react.RBuilder
+import react.RComponent
+import react.RProps
+import react.RState
 import react.dom.div
 import react.dom.jsStyle
 import react.dom.key
 
-val cellDimensions = mapOf(
-        "width" to "20px",
-        "height" to "20px"
-)
-
-val cellStyle = cellDimensions.plus(borderStyleL).plus("margin" to "1px")
-
-fun RBuilder.visibleUniverse(frame: Frame, toggleCellFn: (Cell) -> Unit) {
+fun RBuilder.visibleUniverse(frame: Frame, toggleCellFn: (game.Cell) -> Unit) {
 
     div {
 
@@ -28,22 +24,12 @@ fun RBuilder.visibleUniverse(frame: Frame, toggleCellFn: (Cell) -> Unit) {
 
                 legendCell(coordinate = y, axis = "y")
 
-                (0L until frame.upperOutermost.x).forEach { x ->
-
-                    val coordinate = Coordinate(x = x, y = y)
-
-                    val cell = frame.find { it.location == coordinate } ?: coordinate.asDeadCell()
-
-                    div {
-                        attrs {
-                            key = "x-$x,y-$y"
-                            jsStyle = cellStyle.let { if (cell is Alive) it.plus("backgroundColor" to "red") else it }.toJs()
-                            onClickFunction = {
-                                toggleCellFn(cell)
-                            }
-                        }
-                    }
-                }
+                row(
+                        content = frame.filter { it.location.y == y }.toSet(),
+                        length = frame.upperOutermost.x,
+                        rowValue = y,
+                        toggleCellFn = toggleCellFn
+                )
             }
         }
 
