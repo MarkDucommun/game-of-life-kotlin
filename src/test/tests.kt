@@ -1,9 +1,12 @@
 package test
 
+import app.App
 import game.*
-import react.*
+import react.RBuilder
+import react.RComponent
+import react.RProps
+import react.RState
 import test.utilities.grouping
-import test.utilities.succeedsAndShouldReturn
 import test.utilities.test
 
 class TestRunner : RComponent<RProps, RState>() {
@@ -11,9 +14,8 @@ class TestRunner : RComponent<RProps, RState>() {
     override fun RBuilder.render() {
 
         grouping(description = "universe") {
-
             test(description = "next - one cell by itself dies") {
-                universe(alive(x = 0, y = 0)).next() succeedsAndShouldReturn universe()
+                universe(alive(x = 0, y = 0)).next() == universe()
             }
 
             test(description = "next - one dead cell surrounded by three live cells revitalizes") {
@@ -21,7 +23,7 @@ class TestRunner : RComponent<RProps, RState>() {
                         alive(x = 1, y = -1),
                         alive(x = 0, y = 1),
                         alive(x = -1, y = -1)
-                ).next() succeedsAndShouldReturn universe(
+                ).next() == universe(
                         alive(x = 0, y = 0)
                 )
             }
@@ -32,7 +34,7 @@ class TestRunner : RComponent<RProps, RState>() {
                         alive(x = 0, y = 1),
                         alive(x = 1, y = 0),
                         alive(x = 1, y = 1)
-                ).next() succeedsAndShouldReturn universe(
+                ).next() == universe(
                         alive(x = 0, y = 0),
                         alive(x = 0, y = 1),
                         alive(x = 1, y = 0),
@@ -45,7 +47,7 @@ class TestRunner : RComponent<RProps, RState>() {
                         alive(x = 0, y = -1),
                         alive(x = 0, y = 0),
                         alive(x = 0, y = 1)
-                ).next() succeedsAndShouldReturn universe(
+                ).next() == universe(
                         alive(x = -1, y = 0),
                         alive(x = 0, y = 0),
                         alive(x = 1, y = 0)
@@ -54,7 +56,6 @@ class TestRunner : RComponent<RProps, RState>() {
         }
 
         grouping(description = "frame") {
-
             test(description = "create - it can capture a portion of a universe") {
 
                 val set = setOf(
@@ -63,9 +64,10 @@ class TestRunner : RComponent<RProps, RState>() {
                         dead(x = 0, y = 1)
                 )
 
-                Universe(set).createFrame(Coordinate(x = 2, y = 2)) succeedsAndShouldReturn Frame(
-                        rows = set,
-                        upperOutermost = Coordinate(x = 2, y = 2)
+                Universe(set).createFrame(Coordinate(x = 2, y = 2)) == Frame(
+                        cells = set,
+                        upperOutermost = Coordinate(x = 2, y = 2),
+                        universe = Universe(set)
                 )
             }
 
@@ -79,13 +81,25 @@ class TestRunner : RComponent<RProps, RState>() {
                         alive(x = 2, y = 2)
                 )
 
-                Universe(set).createFrame(Coordinate(x = 2, y = 2)) succeedsAndShouldReturn Frame(
-                        rows = setOf(
+                Universe(set).createFrame(Coordinate(x = 2, y = 2)) == Frame(
+                        cells = setOf(
                                 alive(x = 0, y = 0),
                                 alive(x = 1, y = 1)
                         ),
-                        upperOutermost = Coordinate(x = 2, y = 2)
+                        upperOutermost = Coordinate(x = 2, y = 2),
+                        universe = Universe(set)
                 )
+            }
+        }
+
+        grouping(description = "App") {
+            test(description = "test") {
+
+                val app = App()
+
+                app.render()
+
+                true
             }
         }
     }
